@@ -281,11 +281,11 @@ int main(void)
 		printf("Failed to create test led task\r\n");
 	}
 	
-// 	/* Create task to make led1 blink */
-// 	if (xTaskCreate(task_led1, "Led1", TASK_LED1_STACK_SIZE, NULL,
-// 	 TASK_LED1_STACK_PRIORITY, NULL) != pdPASS) {
-// 		printf("Failed to create test led1 task\r\n");
-// 	}
+	/* Create task to make led1 blink */
+	if (xTaskCreate(task_led1, "Led1", TASK_LED1_STACK_SIZE, NULL,
+	 TASK_LED1_STACK_PRIORITY, NULL) != pdPASS) {
+		printf("Failed to create test led1 task\r\n");
+	}
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();

@@ -81,11 +81,19 @@ SemaphoreHandle_t xSemaphore_1;
 * \brief AFEC interrupt callback function.
 */
 static void AFEC_pot_Callback(void){
-	g_ul_value = afec_channel_get_value(AFEC_POT, AFEC_POT_CHANNEL);
+	
+
+
+// 	g_ul_value = afec_channel_get_value(AFEC_POT, AFEC_POT_CHANNEL);
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	printf("but_callback \n");
-	xSemaphoreGiveFromISR(xSemaphore_1, &xHigherPriorityTaskWoken);
+// 	printf("but_callback \n");
 	printf("semafaro tx \n");
+	adcData adc;
+	adc.value = afec_channel_get_value(AFEC_POT, AFEC_POT_CHANNEL);
+	printf("%d\n", adc.value);
+	xQueueSendFromISR(xQueueADC, &adc, 0);
+	xSemaphoreGiveFromISR(xSemaphore_1, &xHigherPriorityTaskWoken);
+
 }
 
 ///************************************************************************/
@@ -152,11 +160,11 @@ void task_adc(void){
 	
 	while(1){
 		if( xSemaphoreTake(xSemaphore_1, ( TickType_t ) 500) == pdTRUE ){
-			printf("%d\n", g_ul_value);
-			adc.value = g_ul_value;
-			xQueueSend(xQueueADC, &adc, 0);
+// 			printf("%d\n", g_ul_value);
+// 			adc.value = g_ul_value;
+// 			xQueueSend(xQueueADC, &adc, 0);
 			
-			vTaskDelay(500);
+// 			vTaskDelay(500);
 
 			/* Selecina canal e inicializa conversão */
 			afec_channel_enable(AFEC_POT, AFEC_POT_CHANNEL);
@@ -355,7 +363,7 @@ void task_lcd(void){
 	// Busca um novo valor na fila do adc!
 	// formata
 	// e imprime no LCD o dado
-	if (xQueueReceive( xQueueADC, &(adc), ( TickType_t )  100 / portTICK_PERIOD_MS)) {
+	if (xQueueReceiveFromISR( xQueueADC, &(adc), ( TickType_t )  100 / portTICK_PERIOD_MS)) {
 		char b[512];
 		sprintf(b, "%04d", adc.value);
 		font_draw_text(&arial_72, b, 50, 200, 2);

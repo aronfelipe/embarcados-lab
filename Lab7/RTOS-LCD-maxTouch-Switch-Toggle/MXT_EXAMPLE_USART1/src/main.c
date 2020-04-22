@@ -11,9 +11,9 @@
 /************************************************************************/
 /* prototypes                                                           */
 /************************************************************************/
-void but0_callback(void);
-void but1_callback(void);
-void but2_callback(void);
+void but0_callback();
+void but1_callback();
+void but2_callback();
 
 
 /************************************************************************/
@@ -37,6 +37,7 @@ typedef struct {
 	uint32_t x;         // posicao x
 	uint32_t y;         // posicao y,
 	uint8_t status;
+	uint32_t number;
 } t_but;
 
 /************************************************************************/
@@ -113,17 +114,32 @@ extern void vApplicationMallocFailedHook(void)
 }
 
 // New
+void draw_button_new(t_but but){
+	uint32_t color;
+	if(but.status)
+	color = but.colorOn;
+	else
+	color = but.colorOff;
 
-void but0_callback() {
-	
+	ili9488_set_foreground_color(COLOR_CONVERT(color));
+	ili9488_draw_filled_rectangle(but.x-but.width/2, but.y-but.height/2,
+	but.x+but.width/2, but.y+but.height/2);
 }
 
-void but1_callback() {
-	
+// New
+void but0_callback(t_but botoes[]) {
+	botoes[0].status =! botoes[0].status;
+	draw_button_new(botoes[0]);
 }
 
-void but2_callback() {
-	
+void but1_callback(t_but botoes[]) {
+	botoes[1].status =! botoes[1].status;
+	draw_button_new(botoes[1]);
+}
+
+void but2_callback(t_but botoes[]) {
+	botoes[2].status =! botoes[2].status;
+	draw_button_new(botoes[2]);
 }
 
 /************************************************************************/
@@ -144,19 +160,6 @@ static void configure_lcd(void){
 /************************************************************************/
 /* funcoes                                                              */
 /************************************************************************/
-
-// New
-void draw_button_new(t_but but){
-	uint32_t color;
-	if(but.status)
-	color = but.colorOn;
-	else
-	color = but.colorOff;
-
-	ili9488_set_foreground_color(COLOR_CONVERT(color));
-	ili9488_draw_filled_rectangle(but.x-but.width/2, but.y-but.height/2,
-	but.x+but.width/2, but.y+but.height/2);
-}
 
 void draw_screen(void) {
   ili9488_set_foreground_color(COLOR_CONVERT(COLOR_WHITE));
@@ -297,19 +300,19 @@ void task_lcd(void){
 	xQueueTouch = xQueueCreate( 10, sizeof( touchData ) );
 	configure_lcd();
 	draw_screen();
-	font_draw_text(&digital52, "DEMO - BUT", 0, 0, 1);
+	font_draw_text(&digital52, "DEMO - BUT", 40, 320, 1);
 
 	t_but but0 = {.width = 120, .height = 75,
 		.colorOn = COLOR_TOMATO, .colorOff = COLOR_BLACK,
-	.x = ILI9488_LCD_WIDTH/2, .y = 40 , .status = 0};
+	.x = ILI9488_LCD_WIDTH/2, .y = 40 , .status = 0, .number = 0};
 
 	t_but but1 = {.width = 120, .height = 75,
 		.colorOn = COLOR_BLUEVIOLET, .colorOff = COLOR_BLACK,
-	.x = ILI9488_LCD_WIDTH/2, .y = 140 , .status = 0};
+	.x = ILI9488_LCD_WIDTH/2, .y = 140 , .status = 0, .number = 1};
 
 	t_but but2 = {.width = 120, .height = 75,
 		.colorOn = COLOR_DARKGRAY, .colorOff = COLOR_BLACK,
-	.x = ILI9488_LCD_WIDTH/2, .y = 240 , .status = 0};
+	.x = ILI9488_LCD_WIDTH/2, .y = 240 , .status = 0, .number = 2};
 	
 	t_but botoes[] = {but0, but1, but2};
 
@@ -322,19 +325,17 @@ void task_lcd(void){
 
 	while (true) {
 		if (xQueueReceive( xQueueTouch, &(touch), ( TickType_t )  500 / portTICK_PERIOD_MS)) {
-			
 			int b = process_touch(botoes, touch, 3);
-			
 			if(b >= 0){
-// 				if (b == 0){
-// 					but_callback()
-// 				}
-				botoes[b].status =! botoes[b].status;
-				draw_button_new(botoes[b]);
+				if (b == 0){
+					but0_callback(botoes);
+				} else if (b == 1) {
+					but1_callback(botoes);
+				} else if (b == 2) {
+					but2_callback(botoes);
+				}
 			}
-
 			printf("x:%d y:%d\n", touch.x, touch.y);
-
 		}
 	}
 }

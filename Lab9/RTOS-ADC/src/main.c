@@ -29,6 +29,7 @@
 #define NUM_TAPS   12  // ordem do filtro (quantos coefientes)
 #define BLOCK_SIZE 1   // se será processado por blocos, no caso não.
 
+// Filtro com N = 12
 const float32_t firCoeffs32[NUM_TAPS] ={
     0.07930125683894955,
     0.08147535648783032,

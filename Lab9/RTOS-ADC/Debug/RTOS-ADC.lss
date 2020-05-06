@@ -3,17 +3,17 @@ RTOS-ADC.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00007d68  00400000  00400000  00010000  2**6
+  0 .text         00007d78  00400000  00400000  00010000  2**6
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .ARM.exidx    00000008  00407d68  00407d68  00017d68  2**2
+  1 .ARM.exidx    00000008  00407d78  00407d78  00017d78  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  2 .relocate     000009c0  20400000  00407d70  00020000  2**3
+  2 .relocate     000009c0  20400000  00407d80  00020000  2**3
                   CONTENTS, ALLOC, LOAD, CODE
-  3 .bss          0000c0c8  204009c0  00408730  000209c0  2**2
+  3 .bss          0000c0c8  204009c0  00408740  000209c0  2**2
                   ALLOC
-  4 .stack        00002000  2040ca88  004147f8  000209c0  2**0
+  4 .stack        00002000  2040ca88  00414808  000209c0  2**0
                   ALLOC
-  5 .heap         00000200  2040ea88  004167f8  000209c0  2**0
+  5 .heap         00000200  2040ea88  00416808  000209c0  2**0
                   ALLOC
   6 .ARM.attributes 0000002c  00000000  00000000  000209c0  2**0
                   CONTENTS, READONLY
@@ -29,13 +29,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  12 .debug_line   00018e27  00000000  00000000  0007f073  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_str    000a0526  00000000  00000000  00097e9a  2**0
+ 13 .debug_str    000a0527  00000000  00000000  00097e9a  2**0
                   CONTENTS, READONLY, DEBUGGING
- 14 .debug_loc    0000eee0  00000000  00000000  001383c0  2**0
+ 14 .debug_loc    0000eee0  00000000  00000000  001383c1  2**0
                   CONTENTS, READONLY, DEBUGGING
- 15 .debug_ranges 00001650  00000000  00000000  001472a0  2**0
+ 15 .debug_ranges 00001650  00000000  00000000  001472a1  2**0
                   CONTENTS, READONLY, DEBUGGING
- 16 .debug_frame  00003e24  00000000  00000000  001488f0  2**2
+ 16 .debug_frame  00003e24  00000000  00000000  001488f4  2**2
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -79,7 +79,7 @@ Disassembly of section .text:
   40017e:	bd10      	pop	{r4, pc}
   400180:	204009c0 	.word	0x204009c0
   400184:	00000000 	.word	0x00000000
-  400188:	00407d70 	.word	0x00407d70
+  400188:	00407d80 	.word	0x00407d80
 
 0040018c <frame_dummy>:
   40018c:	4b0c      	ldr	r3, [pc, #48]	; (4001c0 <frame_dummy+0x34>)
@@ -107,9 +107,9 @@ Disassembly of section .text:
   4001bc:	4718      	bx	r3
   4001be:	bf00      	nop
   4001c0:	00000000 	.word	0x00000000
-  4001c4:	00407d70 	.word	0x00407d70
+  4001c4:	00407d80 	.word	0x00407d80
   4001c8:	204009c4 	.word	0x204009c4
-  4001cc:	00407d70 	.word	0x00407d70
+  4001cc:	00407d80 	.word	0x00407d80
   4001d0:	00000000 	.word	0x00000000
 
 004001d4 <afec_process_callback>:
@@ -5648,7 +5648,7 @@ __always_inline static void fpu_enable(void)
   4020d8:	e7fe      	b.n	4020d8 <Reset_Handler+0x98>
   4020da:	bf00      	nop
   4020dc:	20400000 	.word	0x20400000
-  4020e0:	00407d70 	.word	0x00407d70
+  4020e0:	00407d80 	.word	0x00407d80
   4020e4:	204009c0 	.word	0x204009c0
   4020e8:	2040ca88 	.word	0x2040ca88
   4020ec:	204009c0 	.word	0x204009c0
@@ -10478,7 +10478,7 @@ signed char *pcTaskName)
   404192:	4798      	blx	r3
   404194:	e7fe      	b.n	404194 <vApplicationStackOverflowHook+0xc>
   404196:	bf00      	nop
-  404198:	00407bc4 	.word	0x00407bc4
+  404198:	00407bd4 	.word	0x00407bd4
   40419c:	00404bb1 	.word	0x00404bb1
 
 004041a0 <vApplicationTickHook>:
@@ -10848,7 +10848,7 @@ void TC_init(Tc * TC, int ID_TC, int TC_CHANNEL, int freq){
 
  void task_adc(void){
   404424:	b5f0      	push	{r4, r5, r6, r7, lr}
-  404426:	b0ab      	sub	sp, #172	; 0xac
+  404426:	b0b7      	sub	sp, #220	; 0xdc
 
     adcData adc;
     t_plot plot;
@@ -10941,9 +10941,9 @@ void TC_init(Tc * TC, int ID_TC, int TC_CHANNEL, int freq){
 	arm_fir_init_f32(&S, NUM_TAPS, (float32_t *)&firCoeffs32[0], &firStateF32[0], BLOCK_SIZE);
   4044a8:	2301      	movs	r3, #1
   4044aa:	9300      	str	r3, [sp, #0]
-  4044ac:	ab1f      	add	r3, sp, #124	; 0x7c
+  4044ac:	ab27      	add	r3, sp, #156	; 0x9c
   4044ae:	4a2a      	ldr	r2, [pc, #168]	; (404558 <task_adc+0x134>)
-  4044b0:	2108      	movs	r1, #8
+  4044b0:	210c      	movs	r1, #12
   4044b2:	a80c      	add	r0, sp, #48	; 0x30
   4044b4:	4c29      	ldr	r4, [pc, #164]	; (40455c <task_adc+0x138>)
   4044b6:	47a0      	blx	r4
@@ -10963,21 +10963,21 @@ void TC_init(Tc * TC, int ID_TC, int TC_CHANNEL, int freq){
   4044be:	e018      	b.n	4044f2 <task_adc+0xce>
   4044c0:	2301      	movs	r3, #1
   4044c2:	aa0f      	add	r2, sp, #60	; 0x3c
-  4044c4:	a917      	add	r1, sp, #92	; 0x5c
+  4044c4:	a91b      	add	r1, sp, #108	; 0x6c
   4044c6:	a80c      	add	r0, sp, #48	; 0x30
   4044c8:	47b8      	blx	r7
           plot.raw = (int) inputF32[0];
-  4044ca:	eddd 7a17 	vldr	s15, [sp, #92]	; 0x5c
+  4044ca:	eddd 7a1b 	vldr	s15, [sp, #108]	; 0x6c
   4044ce:	eefd 7ae7 	vcvt.s32.f32	s15, s15
-  4044d2:	edcd 7a27 	vstr	s15, [sp, #156]	; 0x9c
+  4044d2:	edcd 7a33 	vstr	s15, [sp, #204]	; 0xcc
           plot.filtrado = (int) outputF32[0];
   4044d6:	eddd 7a0f 	vldr	s15, [sp, #60]	; 0x3c
   4044da:	eefd 7ae7 	vcvt.s32.f32	s15, s15
-  4044de:	edcd 7a28 	vstr	s15, [sp, #160]	; 0xa0
+  4044de:	edcd 7a34 	vstr	s15, [sp, #208]	; 0xd0
           xQueueSend(xQueuePlot, &plot, 0);
   4044e2:	2300      	movs	r3, #0
   4044e4:	461a      	mov	r2, r3
-  4044e6:	a927      	add	r1, sp, #156	; 0x9c
+  4044e6:	a933      	add	r1, sp, #204	; 0xcc
   4044e8:	481f      	ldr	r0, [pc, #124]	; (404568 <task_adc+0x144>)
   4044ea:	6800      	ldr	r0, [r0, #0]
   4044ec:	4e1f      	ldr	r6, [pc, #124]	; (40456c <task_adc+0x148>)
@@ -10987,20 +10987,20 @@ void TC_init(Tc * TC, int ID_TC, int TC_CHANNEL, int freq){
       if (xQueueReceive( xQueueADC, &(adc), 100)) {
   4044f2:	2300      	movs	r3, #0
   4044f4:	2264      	movs	r2, #100	; 0x64
-  4044f6:	a929      	add	r1, sp, #164	; 0xa4
+  4044f6:	a935      	add	r1, sp, #212	; 0xd4
   4044f8:	6828      	ldr	r0, [r5, #0]
   4044fa:	47a0      	blx	r4
   4044fc:	2800      	cmp	r0, #0
   4044fe:	d0f8      	beq.n	4044f2 <task_adc+0xce>
         if(i <= NUM_TAPS){
-  404500:	2e08      	cmp	r6, #8
+  404500:	2e0c      	cmp	r6, #12
   404502:	dcdd      	bgt.n	4044c0 <task_adc+0x9c>
           inputF32[i++] = (float) adc.value;
-  404504:	ab2a      	add	r3, sp, #168	; 0xa8
+  404504:	ab36      	add	r3, sp, #216	; 0xd8
   404506:	eb03 0386 	add.w	r3, r3, r6, lsl #2
-  40450a:	eddd 7a29 	vldr	s15, [sp, #164]	; 0xa4
+  40450a:	eddd 7a35 	vldr	s15, [sp, #212]	; 0xd4
   40450e:	eef8 7a67 	vcvt.f32.u32	s15, s15
-  404512:	ed43 7a13 	vstr	s15, [r3, #-76]	; 0xffffffb4
+  404512:	ed43 7a1b 	vstr	s15, [r3, #-108]	; 0xffffff94
   404516:	3601      	adds	r6, #1
   404518:	e7eb      	b.n	4044f2 <task_adc+0xce>
   40451a:	bf00      	nop
@@ -11195,16 +11195,16 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   40466c:	0040200b 	.word	0x0040200b
   404670:	20400014 	.word	0x20400014
   404674:	00405355 	.word	0x00405355
-  404678:	00407b70 	.word	0x00407b70
+  404678:	00407b80 	.word	0x00407b80
   40467c:	00404321 	.word	0x00404321
   404680:	00402fd5 	.word	0x00402fd5
-  404684:	00407b74 	.word	0x00407b74
+  404684:	00407b84 	.word	0x00407b84
   404688:	00404bb1 	.word	0x00404bb1
-  40468c:	00407b98 	.word	0x00407b98
+  40468c:	00407ba8 	.word	0x00407ba8
   404690:	004041e1 	.word	0x004041e1
-  404694:	00407b9c 	.word	0x00407b9c
+  404694:	00407bac 	.word	0x00407bac
   404698:	00404425 	.word	0x00404425
-  40469c:	00407ba0 	.word	0x00407ba0
+  40469c:	00407bb0 	.word	0x00407bb0
   4046a0:	00403209 	.word	0x00403209
 
 004046a4 <arm_fir_init_f32>:
@@ -11586,7 +11586,7 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   404b7c:	4e0a      	ldr	r6, [pc, #40]	; (404ba8 <__libc_init_array+0x48>)
   404b7e:	4d0b      	ldr	r5, [pc, #44]	; (404bac <__libc_init_array+0x4c>)
   404b80:	1b76      	subs	r6, r6, r5
-  404b82:	f003 f8df 	bl	407d44 <_init>
+  404b82:	f003 f8e7 	bl	407d54 <_init>
   404b86:	10b6      	asrs	r6, r6, #2
   404b88:	bf18      	it	ne
   404b8a:	2400      	movne	r4, #0
@@ -11599,10 +11599,10 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   404b9a:	bd70      	pop	{r4, r5, r6, pc}
   404b9c:	bd70      	pop	{r4, r5, r6, pc}
   404b9e:	bf00      	nop
-  404ba0:	00407d50 	.word	0x00407d50
-  404ba4:	00407d50 	.word	0x00407d50
-  404ba8:	00407d58 	.word	0x00407d58
-  404bac:	00407d50 	.word	0x00407d50
+  404ba0:	00407d60 	.word	0x00407d60
+  404ba4:	00407d60 	.word	0x00407d60
+  404ba8:	00407d68 	.word	0x00407d68
+  404bac:	00407d60 	.word	0x00407d60
 
 00404bb0 <iprintf>:
   404bb0:	b40f      	push	{r0, r1, r2, r3}
@@ -13161,10 +13161,10 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   405c4c:	f043 0310 	orrne.w	r3, r3, #16
   405c50:	e576      	b.n	405740 <_vfiprintf_r+0xe4>
   405c52:	bf00      	nop
-  405c54:	00407c10 	.word	0x00407c10
-  405c58:	00407c20 	.word	0x00407c20
-  405c5c:	00407bf4 	.word	0x00407bf4
-  405c60:	00407be0 	.word	0x00407be0
+  405c54:	00407c20 	.word	0x00407c20
+  405c58:	00407c30 	.word	0x00407c30
+  405c5c:	00407c04 	.word	0x00407c04
+  405c60:	00407bf0 	.word	0x00407bf0
   405c64:	9907      	ldr	r1, [sp, #28]
   405c66:	680e      	ldr	r6, [r1, #0]
   405c68:	460a      	mov	r2, r1
@@ -13587,8 +13587,8 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   406080:	d19e      	bne.n	405fc0 <_vfiprintf_r+0x964>
   406082:	46ca      	mov	sl, r9
   406084:	f7ff bbc0 	b.w	405808 <_vfiprintf_r+0x1ac>
-  406088:	00407c20 	.word	0x00407c20
-  40608c:	00407c10 	.word	0x00407c10
+  406088:	00407c30 	.word	0x00407c30
+  40608c:	00407c20 	.word	0x00407c20
   406090:	3104      	adds	r1, #4
   406092:	6816      	ldr	r6, [r2, #0]
   406094:	9107      	str	r1, [sp, #28]
@@ -13826,8 +13826,8 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   4062dc:	f88d 5037 	strb.w	r5, [sp, #55]	; 0x37
   4062e0:	e469      	b.n	405bb6 <_vfiprintf_r+0x55a>
   4062e2:	bf00      	nop
-  4062e4:	00407c10 	.word	0x00407c10
-  4062e8:	00407c08 	.word	0x00407c08
+  4062e4:	00407c20 	.word	0x00407c20
+  4062e8:	00407c18 	.word	0x00407c18
 
 004062ec <__sbprintf>:
   4062ec:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -14260,10 +14260,10 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   4066d6:	2c00      	cmp	r4, #0
   4066d8:	d1f9      	bne.n	4066ce <__libc_fini_array+0x16>
   4066da:	e8bd 4038 	ldmia.w	sp!, {r3, r4, r5, lr}
-  4066de:	f001 bb3b 	b.w	407d58 <_fini>
+  4066de:	f001 bb43 	b.w	407d68 <_fini>
   4066e2:	bf00      	nop
-  4066e4:	00407d68 	.word	0x00407d68
-  4066e8:	00407d64 	.word	0x00407d64
+  4066e4:	00407d78 	.word	0x00407d78
+  4066e8:	00407d74 	.word	0x00407d74
 
 004066ec <__fputwc>:
   4066ec:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -15860,7 +15860,7 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   40762a:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
   40762e:	bf00      	nop
   407630:	20400850 	.word	0x20400850
-  407634:	00407bdc 	.word	0x00407bdc
+  407634:	00407bec 	.word	0x00407bec
   407638:	00404bd9 	.word	0x00404bd9
 
 0040763c <_close_r>:
@@ -16352,65 +16352,66 @@ static inline void stdio_serial_init(volatile void *usart, const usart_serial_op
   407b4c:	00637653 	.word	0x00637653
 
 00407b50 <firCoeffs32>:
-  407b50:	3dfb45c5 3dff4fd2 3e010356 3e01b1df     .E.=.O.=V..>...>
-  407b60:	3e01b1df 3e010356 3dff4fd2 3dfb45c5     ...>V..>.O.=.E.=
-  407b70:	0074786d 6c696146 74206465 7263206f     mxt.Failed to cr
-  407b80:	65746165 73657420 656c2074 61742064     eate test led ta
-  407b90:	0a0d6b73 00000000 0064636c 00636461     sk......lcd.adc.
-  407ba0:	6c696146 74206465 7263206f 65746165     Failed to create
-  407bb0:	73657420 64612074 61742063 0a0d6b73      test adc task..
-  407bc0:	00000000 63617473 766f206b 6c667265     ....stack overfl
-  407bd0:	2520776f 73252078 00000a0d              ow %x %s....
+  407b50:	3da268b3 3da6dc8d 3daa799c 3dad3729     .h.=...=.y.=)7.=
+  407b60:	3daf0e94 3daffb68 3daffb68 3daf0e94     ...=h..=h..=...=
+  407b70:	3dad3729 3daa799c 3da6dc8d 3da268b3     )7.=.y.=...=.h.=
+  407b80:	0074786d 6c696146 74206465 7263206f     mxt.Failed to cr
+  407b90:	65746165 73657420 656c2074 61742064     eate test led ta
+  407ba0:	0a0d6b73 00000000 0064636c 00636461     sk......lcd.adc.
+  407bb0:	6c696146 74206465 7263206f 65746165     Failed to create
+  407bc0:	73657420 64612074 61742063 0a0d6b73      test adc task..
+  407bd0:	00000000 63617473 766f206b 6c667265     ....stack overfl
+  407be0:	2520776f 73252078 00000a0d              ow %x %s....
 
-00407bdc <_global_impure_ptr>:
-  407bdc:	20400018 33323130 37363534 42413938     ..@ 0123456789AB
-  407bec:	46454443 00000000 33323130 37363534     CDEF....01234567
-  407bfc:	62613938 66656463 00000000 6c756e28     89abcdef....(nul
-  407c0c:	0000296c                                l)..
+00407bec <_global_impure_ptr>:
+  407bec:	20400018 33323130 37363534 42413938     ..@ 0123456789AB
+  407bfc:	46454443 00000000 33323130 37363534     CDEF....01234567
+  407c0c:	62613938 66656463 00000000 6c756e28     89abcdef....(nul
+  407c1c:	0000296c                                l)..
 
-00407c10 <blanks.7217>:
-  407c10:	20202020 20202020 20202020 20202020                     
+00407c20 <blanks.7217>:
+  407c20:	20202020 20202020 20202020 20202020                     
 
-00407c20 <zeroes.7218>:
-  407c20:	30303030 30303030 30303030 30303030     0000000000000000
-  407c30:	00000043 49534f50 00000058 0000002e     C...POSIX.......
+00407c30 <zeroes.7218>:
+  407c30:	30303030 30303030 30303030 30303030     0000000000000000
+  407c40:	00000043 49534f50 00000058 0000002e     C...POSIX.......
 
-00407c40 <_ctype_>:
-  407c40:	20202000 20202020 28282020 20282828     .         ((((( 
-  407c50:	20202020 20202020 20202020 20202020                     
-  407c60:	10108820 10101010 10101010 10101010      ...............
-  407c70:	04040410 04040404 10040404 10101010     ................
-  407c80:	41411010 41414141 01010101 01010101     ..AAAAAA........
-  407c90:	01010101 01010101 01010101 10101010     ................
-  407ca0:	42421010 42424242 02020202 02020202     ..BBBBBB........
-  407cb0:	02020202 02020202 02020202 10101010     ................
-  407cc0:	00000020 00000000 00000000 00000000      ...............
+00407c50 <_ctype_>:
+  407c50:	20202000 20202020 28282020 20282828     .         ((((( 
+  407c60:	20202020 20202020 20202020 20202020                     
+  407c70:	10108820 10101010 10101010 10101010      ...............
+  407c80:	04040410 04040404 10040404 10101010     ................
+  407c90:	41411010 41414141 01010101 01010101     ..AAAAAA........
+  407ca0:	01010101 01010101 01010101 10101010     ................
+  407cb0:	42421010 42424242 02020202 02020202     ..BBBBBB........
+  407cc0:	02020202 02020202 02020202 10101010     ................
+  407cd0:	00000020 00000000 00000000 00000000      ...............
 	...
 
-00407d44 <_init>:
-  407d44:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
-  407d46:	bf00      	nop
-  407d48:	bcf8      	pop	{r3, r4, r5, r6, r7}
-  407d4a:	bc08      	pop	{r3}
-  407d4c:	469e      	mov	lr, r3
-  407d4e:	4770      	bx	lr
+00407d54 <_init>:
+  407d54:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+  407d56:	bf00      	nop
+  407d58:	bcf8      	pop	{r3, r4, r5, r6, r7}
+  407d5a:	bc08      	pop	{r3}
+  407d5c:	469e      	mov	lr, r3
+  407d5e:	4770      	bx	lr
 
-00407d50 <__init_array_start>:
-  407d50:	00406439 	.word	0x00406439
+00407d60 <__init_array_start>:
+  407d60:	00406439 	.word	0x00406439
 
-00407d54 <__frame_dummy_init_array_entry>:
-  407d54:	0040018d                                ..@.
+00407d64 <__frame_dummy_init_array_entry>:
+  407d64:	0040018d                                ..@.
 
-00407d58 <_fini>:
-  407d58:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
-  407d5a:	bf00      	nop
-  407d5c:	bcf8      	pop	{r3, r4, r5, r6, r7}
-  407d5e:	bc08      	pop	{r3}
-  407d60:	469e      	mov	lr, r3
-  407d62:	4770      	bx	lr
+00407d68 <_fini>:
+  407d68:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+  407d6a:	bf00      	nop
+  407d6c:	bcf8      	pop	{r3, r4, r5, r6, r7}
+  407d6e:	bc08      	pop	{r3}
+  407d70:	469e      	mov	lr, r3
+  407d72:	4770      	bx	lr
 
-00407d64 <__fini_array_start>:
-  407d64:	00400169 	.word	0x00400169
+00407d74 <__fini_array_start>:
+  407d74:	00400169 	.word	0x00400169
 
 Disassembly of section .relocate:
 
@@ -16536,10 +16537,10 @@ void portable_delay_cycles(unsigned long n)
 	...
 20400914:	0043 0000 0000 0000 0000 0000 0000 0000     C...............
 	...
-20400934:	7531 0040 6ec1 0040 0000 0000 7c40 0040     1u@..n@.....@|@.
-20400944:	7c3c 0040 7bc0 0040 7bc0 0040 7bc0 0040     <|@..{@..{@..{@.
-20400954:	7bc0 0040 7bc0 0040 7bc0 0040 7bc0 0040     .{@..{@..{@..{@.
-20400964:	7bc0 0040 7bc0 0040 ffff ffff ffff ffff     .{@..{@.........
+20400934:	7531 0040 6ec1 0040 0000 0000 7c50 0040     1u@..n@.....P|@.
+20400944:	7c4c 0040 7bd0 0040 7bd0 0040 7bd0 0040     L|@..{@..{@..{@.
+20400954:	7bd0 0040 7bd0 0040 7bd0 0040 7bd0 0040     .{@..{@..{@..{@.
+20400964:	7bd0 0040 7bd0 0040 ffff ffff ffff ffff     .{@..{@.........
 20400974:	ffff ffff ffff 0000 0001 5341 4943 0049     ..........ASCII.
 	...
 2040099c:	0000 5341 4943 0049 0000 0000 0000 0000     ..ASCII.........

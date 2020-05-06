@@ -23,6 +23,12 @@
 #define TASK_LCD_STACK_SIZE            (6*1024/sizeof(portSTACK_TYPE))
 #define TASK_LCD_STACK_PRIORITY        (tskIDLE_PRIORITY)
 
+
+/************************************************************************/
+/* A                                                                    */
+/************************************************************************/
+#define M_PI 3.14159265358979323846
+
 /************************************************************************/
 /* FIR                                                                  */
 /************************************************************************/
@@ -330,6 +336,7 @@ void task_lcd(void){
   
   char buffer[64];
   int x = 0;
+  int counter = 0;
 
   while (true) {
     if (xQueueReceive( xQueueTouch, &(touch), ( TickType_t )  0 / portTICK_PERIOD_MS)) {
@@ -337,20 +344,38 @@ void task_lcd(void){
     }
     
     if (xQueueReceive( xQueuePlot, &(plot), ( TickType_t )  100 / portTICK_PERIOD_MS)) {     
-//       sprintf(buffer, "%04d", plot.raw);
-//       font_draw_text(&calibri_36, buffer, x, 0, 2);
-      x = x + 5;
+      // sprintf(buffer, "%04d", plot.raw);
+      // font_draw_text(&calibri_36, buffer, x, 0, 2);
+      // x = x + 5;
 
-      ili9488_set_foreground_color(COLOR_CONVERT(COLOR_BLACK));
-      ili9488_draw_filled_circle(x, ILI9488_LCD_HEIGHT - plot.raw / 16, 2 );
+      // ili9488_set_foreground_color(COLOR_CONVERT(COLOR_BLACK));
+      // ili9488_draw_filled_circle(x, ILI9488_LCD_HEIGHT - plot.raw / 16, 2 );
+
+	    // ili9488_set_foreground_color(COLOR_CONVERT(COLOR_RED));
+      // ili9488_draw_filled_circle(x, ILI9488_LCD_HEIGHT - plot.filtrado / 16, 2 );
+
+      // if (x >= ILI9488_LCD_WIDTH) {
+      //   x = 0;
+      //   draw_screen();
+      // }
+
+      double angle =  (2 * M_PI * plot.filtrado) / 4095;
+
+      double x_value = 50 * cos(angle);
+      double y_value = 50 * sin(angle);
+      
+      int x_value_int = ILI9488_LCD_WIDTH/2 + (int) x_value;
+      int y_value_int = ILI9488_LCD_HEIGHT/2 - (int) y_value ;
+
+      counter = counter + 1;
 
 	  ili9488_set_foreground_color(COLOR_CONVERT(COLOR_RED));
-      ili9488_draw_filled_circle(x, ILI9488_LCD_HEIGHT - plot.filtrado / 16, 2 );
+      ili9488_draw_filled_circle(x_value_int, y_value_int, 2 );
 
-      if (x >= ILI9488_LCD_WIDTH) {
-        x = 0;
-        draw_screen();
-      }
+//       if (counter >= 10) {
+//         counter = 0;
+//         draw_screen();
+//       }
     }
   }    
 }

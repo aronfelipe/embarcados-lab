@@ -32,8 +32,8 @@ const uint32_t BUTTON_Y = ILI9488_LCD_HEIGHT/2;
 typedef struct {
 	uint32_t width;     // largura (px)
 	uint32_t height;    // altura  (px)
-	uint32_t colorOn;   // cor do botão acionado
-	uint32_t colorOff;  // cor do botão desligado
+	uint32_t colorOn;   // cor do botï¿½o acionado
+	uint32_t colorOff;  // cor do botï¿½o desligado
 	uint32_t x;         // posicao x
 	uint32_t y;         // posicao y,
 	uint8_t status;
@@ -44,6 +44,25 @@ typedef struct {
 /* Botoes lcd                                                           */
 /************************************************************************/
 
+
+/************************************************************************/
+/* RTC                                                                  */
+/************************************************************************/
+
+typedef struct
+{
+	uint32_t year;
+	uint32_t month;
+	uint32_t day;
+	uint32_t week;
+	uint32_t hour;
+	uint32_t minute;
+	uint32_t seccond;
+} calendar;
+
+void RTC_init(Rtc *rtc, uint32_t id_rtc, calendar t, uint32_t irq_type);
+
+SemaphoreHandle_t xSemaphore_1;
 
 /************************************************************************/
 /* RTOS                                                                  */
@@ -254,6 +273,54 @@ void mxt_handler(struct mxt_device *device, uint *x, uint *y)
   } while ((mxt_is_message_pending(device)) & (i < MAX_ENTRIES));
 }
 
+void RTC_Handler(void)
+{
+	uint32_t ul_status = rtc_get_status(RTC);
+
+	/*
+	*  Verifica por qual motivo entrou
+	*  na interrupcao, se foi por segundo
+	*  ou Alarm
+	*/
+	if ((ul_status & RTC_SR_SEC) == RTC_SR_SEC) {
+		rtc_clear_status(RTC, RTC_SCCR_SECCLR);
+	}
+	
+	/* Time or date alarm */
+	if ((ul_status & RTC_SR_ALARM) == RTC_SR_ALARM) {
+			rtc_clear_status(RTC, RTC_SCCR_ALRCLR);
+	}
+	
+	rtc_clear_status(RTC, RTC_SCCR_ACKCLR);
+	rtc_clear_status(RTC, RTC_SCCR_TIMCLR);
+	rtc_clear_status(RTC, RTC_SCCR_CALCLR);
+	rtc_clear_status(RTC, RTC_SCCR_TDERRCLR);
+}
+
+// RTC
+/**
+* Configura o RTC para funcionar com interrupcao de alarme
+*/
+void RTC_init(Rtc *rtc, uint32_t id_rtc, calendar t, uint32_t irq_type){
+	/* Configura o PMC */
+	pmc_enable_periph_clk(ID_RTC);
+
+	/* Default RTC configuration, 24-hour mode */
+	rtc_set_hour_mode(rtc, 0);
+
+	/* Configura data e hora manualmente */
+	rtc_set_date(rtc, t.year, t.month, t.day, t.week);
+	rtc_set_time(rtc, t.hour, t.minute, t.seccond);
+
+	/* Configure RTC interrupts */
+	NVIC_DisableIRQ(id_rtc);
+	NVIC_ClearPendingIRQ(id_rtc);
+	NVIC_SetPriority(id_rtc, 0);
+	NVIC_EnableIRQ(id_rtc);
+
+	/* Ativa interrupcao via alarme */
+	rtc_enable_interrupt(rtc,  irq_type);
+}
 /************************************************************************/
 /* tasks                                                                */
 /************************************************************************/
@@ -336,6 +403,15 @@ void task_lcd(void){
 				}
 			}
 			printf("x:%d y:%d\n", touch.x, touch.y);
+		}
+		
+		uint32_t h, m, s;
+		char date[300];
+			
+		if( xSemaphoreTakeFromISR(xSemaphore_1, ( TickType_t ) 500) == pdTRUE ){
+			rtc_get_time(RTC, &h, &m, &s);
+			sprintf(date, "%2d:%2d:%2d", h, m, s);
+			font_draw_text(&calibri_36, date, 0, 0, 1);
 		}
 	}
 }

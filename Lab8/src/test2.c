@@ -27,22 +27,26 @@ volatile char flag_led_3 = 0;
 /**
 * LEDs OLED
 */
+
+// Led 1 OLED
 #define LED1_PIO_ID	    ID_PIOA
 #define LED1_PIO         PIOA
 #define LED1_PIN		      0
 #define LED1_IDX_MASK    (1<<LED1_PIN)
 
+// Led 2 OLED
 #define LED2_PIO_ID	    ID_PIOC
 #define LED2_PIO         PIOC
 #define LED2_PIN		      30
 #define LED2_IDX_MASK    (1<<LED2_PIN)
 
+// Led 3 OLED
 #define LED3_PIO_ID	    ID_PIOB
 #define LED3_PIO         PIOB
 #define LED3_PIN		      2
 #define LED3_IDX_MASK    (1<<LED3_PIN)
 
-
+// Button 1 OLED
 #define BUT1_PIO            PIOD
 #define BUT1_PIO_ID         16
 #define BUT1_PIO_IDX        28
@@ -69,7 +73,7 @@ extern void vApplicationMallocFailedHook(void);
 extern void xPortSysTickHandler(void);
 
 // Semaphores
-SemaphoreHandle_t xSemaphore;
+SemaphoreHandle_t semaphore_button_1;
 SemaphoreHandle_t semaphore_button_2;
 SemaphoreHandle_t semaphore_button_3;
 
@@ -77,6 +81,14 @@ SemaphoreHandle_t semaphore_button_3;
 QueueHandle_t queue_uart;
 QueueHandle_t queue_command;
 
+/* PIN TOGGLE                                                           */
+/************************************************************************/
+void pin_toggle(Pio *pio, uint32_t mask) {
+	if (pio_get_output_data_status(pio, mask))
+	pio_clear(pio, mask);
+	else
+	pio_set(pio, mask);
+}
 
 /* CALLBACKS                                                            */
 /************************************************************************/
@@ -87,7 +99,7 @@ void but1_callback(void){
 	// Sinaliza que o butão foi pressionado
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	// Manda uma alteração no semáforo
-	xSemaphoreGiveFromISR(xSemaphore, &xHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(semaphore_button_1, &xHigherPriorityTaskWoken);
 }
 
 /**
@@ -195,6 +207,7 @@ static void task_monitor(void *pvParameters)
 	}
 }
 
+
 static void task_uart(void *pvParameters){
 	char buffer_uart[32];
 	char msg_from_uart;
@@ -213,21 +226,27 @@ static void task_uart(void *pvParameters){
 	}
 }
 
-void pin_toggle(Pio *pio, uint32_t mask) {
-	if (pio_get_output_data_status(pio, mask))
-	pio_clear(pio, mask);
-	else
-	pio_set(pio, mask);
-}
-
 static void task_execute(void *pvParameters){
 	char s[64];
 	while(1){		
 		if (xQueueReceive( queue_command, &(s), ( TickType_t )  100 / portTICK_PERIOD_MS)) {
-			if(!strcmp(s, "led1toggle")){
+            printf("Comando: %s\n", s);
+			printf("CM: led 1 toggle\n");
+			printf("%d", strcmp(s, "l"));
+			if("led 1 toggle" == s){
+				printf("OHTYEAYY");
+				
+			}
+			if(!strcmp(s, "led1on")){
                 pin_toggle(LED1_PIO, LED1_IDX_MASK);
-			} else if (!strcmp(s, "led2toggle")) {
-                pin_toggle(LED2_PIO, LED2_IDX_MASK);
+			} else if (s == "led 3 toggle") {
+				if (flag_led_3 == 1) {
+	      			pio_clear(LED3_PIO, LED3_IDX_MASK);
+					flag_led_3 = 0;
+				} else {
+					pio_set(LED3_PIO, LED3_IDX_MASK);
+	      			flag_led_3 = 1;
+				}
 			}
 		}
 	}
@@ -243,44 +262,98 @@ static void task_led(void *pvParameters)
 		vTaskDelay(xDelay);
 	}
 }
+
 static void task_led1(void *pvParameters)
 {
-	/* Block for 2000ms. */
-	const TickType_t xDelay = 2000 / portTICK_PERIOD_MS;
-	int flag = 0;
 
-	for (;;) {/* We are using the semaphore for synchronisation so we create a binary
-  semaphore rather than a mutex.  We must make sure that the interrupt
-  does not attempt to use the semaphore before it is created! */
-  xSemaphore = xSemaphoreCreateBinary();
+	while(1) {
+		/* We are using the semaphore for synchronisation so we create a binary
+		semaphore rather than a mutex.  We must make sure that the interrupt
+		does not attempt to use the semaphore before it is created! */
+		semaphore_button_1 = xSemaphoreCreateBinary();
 
-  /* devemos iniciar a interrupcao no pino somente apos termos alocado
-  os recursos (no caso semaforo), nessa funcao inicializamos 
-  o botao e seu callback*/
-  /* init botão */
-  pmc_enable_periph_clk(BUT1_PIO_ID);
-  pio_configure(BUT1_PIO, PIO_INPUT, BUT1_PIO_IDX_MASK, PIO_PULLUP);
-  pio_handler_set(BUT1_PIO, BUT1_PIO_ID, BUT1_PIO_IDX_MASK, PIO_IT_FALL_EDGE, but1_callback);
-  pio_enable_interrupt(BUT1_PIO, BUT1_PIO_IDX_MASK);
-  NVIC_EnableIRQ(BUT1_PIO_ID);
-  NVIC_SetPriority(BUT1_PIO_ID, 4); // Prioridade 4
+		/* devemos iniciar a interrupcao no pino somente apos termos alocado
+		os recursos (no caso semaforo), nessa funcao inicializamos 
+		o botao e seu callback*/
+		/* init botão */
+		pmc_enable_periph_clk(BUT1_PIO_ID);
+		pio_configure(BUT1_PIO, PIO_INPUT, BUT1_PIO_IDX_MASK, PIO_PULLUP);
+		pio_handler_set(BUT1_PIO, BUT1_PIO_ID, BUT1_PIO_IDX_MASK, PIO_IT_FALL_EDGE, but1_callback);
+		pio_enable_interrupt(BUT1_PIO, BUT1_PIO_IDX_MASK);
+		NVIC_EnableIRQ(BUT1_PIO_ID);
+		NVIC_SetPriority(BUT1_PIO_ID, 4); // Prioridade 4
 
-  if (xSemaphore == NULL)
-    printf("falha em criar o semaforo \n");
+		if (semaphore_button_1 == NULL)
+		printf("falha em criar o semaforo \n");
 
-  while (1) {
-    if( xSemaphoreTake(xSemaphore, ( TickType_t ) 500) == pdTRUE ){
-      	if (flag == 1) {
-	      	pio_clear(LED1_PIO, LED1_IDX_MASK);
-	      	flag = 0;
-      	}
-      	else {
-	      	pio_set(LED1_PIO, LED1_IDX_MASK);
-	      	flag = 1;
-      	}
-    }
-  }
+		while (1) {
+			if( xSemaphoreTake(semaphore_button_1, ( TickType_t ) 500) == pdTRUE ){
+            	pin_toggle(LED1_PIO, LED1_IDX_MASK);
+			}
+		}
+	}
 }
+
+static void task_led2(void *pvParameters)
+{
+
+	while(1) {
+		/* We are using the semaphore for synchronisation so we create a binary
+		semaphore rather than a mutex.  We must make sure that the interrupt
+		does not attempt to use the semaphore before it is created! */
+		semaphore_button_1 = xSemaphoreCreateBinary();
+
+		/* devemos iniciar a interrupcao no pino somente apos termos alocado
+		os recursos (no caso semaforo), nessa funcao inicializamos 
+		o botao e seu callback*/
+		/* init botão */
+		pmc_enable_periph_clk(BUT_PIO_2);
+		pio_configure(BUT_PIO_2, PIO_INPUT, BUT_IDX_MASK_2, PIO_PULLUP);
+		pio_handler_set(BUT_PIO_2, BUT_PIO_ID_2, BUT_IDX_MASK_2, PIO_IT_FALL_EDGE, but2_callback);
+		pio_enable_interrupt(BUT_PIO_2, BUT_IDX_MASK_2);
+		NVIC_EnableIRQ(BUT_PIO_ID_2);
+		NVIC_SetPriority(BUT_PIO_ID_2, 4); // Prioridade 4
+
+		if (semaphore_button_1 == NULL)
+		printf("falha em criar o semaforo \n");
+
+		while (1) {
+			if( xSemaphoreTake(semaphore_button_1, ( TickType_t ) 500) == pdTRUE ){
+            	pin_toggle(LED2_PIO, LED2_IDX_MASK);
+			}
+		}
+	}
+}
+
+static void task_led3(void *pvParameters)
+{
+
+	while(1) {
+		/* We are using the semaphore for synchronisation so we create a binary
+		semaphore rather than a mutex.  We must make sure that the interrupt
+		does not attempt to use the semaphore before it is created! */
+		semaphore_button_1 = xSemaphoreCreateBinary();
+
+		/* devemos iniciar a interrupcao no pino somente apos termos alocado
+		os recursos (no caso semaforo), nessa funcao inicializamos 
+		o botao e seu callback*/
+		/* init botão */
+		pmc_enable_periph_clk(BUT_PIO_3);
+		pio_configure(BUT_PIO_3, PIO_INPUT, BUT_IDX_MASK_3, PIO_PULLUP);
+		pio_handler_set(BUT_PIO_3, BUT_PIO_ID_3, BUT_IDX_MASK_3, PIO_IT_FALL_EDGE, but3_callback);
+		pio_enable_interrupt(BUT_PIO_3, BUT_IDX_MASK_3);
+		NVIC_EnableIRQ(BUT_PIO_ID_3);
+		NVIC_SetPriority(BUT_PIO_ID_3, 4); // Prioridade 4
+
+		if (semaphore_button_1 == NULL)
+		printf("falha em criar o semaforo \n");
+
+		while (1) {
+			if( xSemaphoreTake(semaphore_button_1, ( TickType_t ) 500) == pdTRUE ){
+            	pin_toggle(LED3_PIO, LED3_IDX_MASK);
+			}
+		}
+	}
 }
 
 
@@ -391,6 +464,18 @@ int main(void)
 		printf("Failed to create test led task\r\n");
 	}
 	
+	/* Create task to make led blink */
+	if (xTaskCreate(task_led2, "Led2", TASK_LED_STACK_SIZE, NULL,
+	TASK_LED_STACK_PRIORITY, NULL) != pdPASS) {
+		printf("Failed to create test led task\r\n");
+	}
+
+	/* Create task to make led blink */
+	if (xTaskCreate(task_led3, "Led3", TASK_LED_STACK_SIZE, NULL,
+	TASK_LED_STACK_PRIORITY, NULL) != pdPASS) {
+		printf("Failed to create test led task\r\n");
+	}
+
 	/* Create task to make led blink */
 	if (xTaskCreate(task_led1, "Led1", TASK_LED_STACK_SIZE, NULL,
 	TASK_LED_STACK_PRIORITY, NULL) != pdPASS) {
